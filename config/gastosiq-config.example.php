@@ -7,4 +7,7 @@ return [
   'DB_NAME' => 'BASE_DE_DATOS',
   'DB_USER' => 'USUARIO_DB',
   'DB_PASSWORD' => 'CONFIGURAR_SOLO_EN_SERVIDOR',
+  // Genera una clave aleatoria única de 32+ caracteres, úsala solo durante instalación.
+  // Borrar esta línea del archivo privado tras la primera instalación.
+  'SETUP_KEY' => 'CLAVE_ALEATORIA_UNICA_DE_32_O_MAS_CARACTERES',
 ];
