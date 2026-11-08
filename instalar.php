@@ -21,7 +21,7 @@ $setupKey = config('SETUP_KEY');
 if (!$https) {
     http_response_code(403);
     $notice = 'Abre el instalador exclusivamente por HTTPS.';
-} elseif (strlen($setupKey) < 32) {
+} elseif (strlen($setupKey) < 32 || str_starts_with($setupKey, 'CLAVE_ALEATORIA_')) {
     http_response_code(503);
     $notice = 'Falta SETUP_KEY: añade una clave aleatoria de 32 o más caracteres al archivo privado gastosiq-config.php.';
 } elseif ($method === 'POST') {
@@ -107,7 +107,7 @@ if (!$https) {
     $notice = 'Método no permitido.';
 }
 function h(string $v): string {return htmlspecialchars($v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');}
-$allowed = $https && strlen($setupKey) >= 32 && !$success && $method === 'GET' || $https && strlen($setupKey) >= 32 && !$success && $method === 'POST' && $notice !== 'El sistema ya tiene un usuario. La instalación está cerrada.';
+$allowed = $https && strlen($setupKey) >= 32 && !str_starts_with($setupKey, 'CLAVE_ALEATORIA_') && !$success && $method === 'GET' || $https && strlen($setupKey) >= 32 && !$success && $method === 'POST' && $notice !== 'El sistema ya tiene un usuario. La instalación está cerrada.';
 ?><!doctype html>
 <html lang="es">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
