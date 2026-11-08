@@ -27,3 +27,11 @@ Leer **[Instalación automática protegida de MariaDB](docs/ACTIVACION_MARIADB.m
 **El antiguo acceso demo ya no está activo.** Hasta terminar la configuración privada y las pruebas del servidor, no considerar el proyecto en producción ni usar información sensible.
 
 **Seguridad:** contraseñas con hash, sesiones HTTP seguras, CSRF, consultas preparadas, autorización por usuario y límite básico de intentos de login. Estas protecciones están implementadas en código pero aún no han sido verificadas en el alojamiento real. El repositorio actualmente es público: nunca subir contraseñas ni datos reales.
+
+
+## Manual visual aprobado
+
+- [Manual visual y guía detallada de ocho páginas](docs/MANUAL_VISUAL_DESPLIEGUE_IQNETING.md).
+- [Manual maestro de metodología en GMIQ](https://github.com/Iqneting/GMIQ/blob/main/manuales/MANUAL_VISUAL_GASTOS_IQ_DESPLIEGUE_V1.md).
+
+El paso 4 debe explicar que el usuario guarde las credenciales de la base, especialmente su contraseña de MariaDB, no las tablas. La presentación aprobada tiene ocho páginas y conserva su línea visual. El PDF binario se entregó en el chat, pero no está subido en este repositorio.
