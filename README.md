@@ -1,23 +1,28 @@
-# IQneting Gastos POS
+# IQneting Gastos POS · PHP + MariaDB
 
-**Estado:** maqueta V1 subida a GitHub; despliegue en Hostinger pendiente de verificar. Backend PHP y MariaDB aún no implementados.
+**Estado:** código de backend y frontend integrado en rama `main`. **Pendiente:** activar conexión privada en Hostinger, importar SQL, crear usuario y verificar funcionamiento real.
 
-## Contenido
+## Componentes
 
-- [index.html](index.html) — maqueta de punto de venta para registro de gastos. Login demo, categorías, teclado numérico, gráfica e historial editable.
-- [Guía de despliegue en Hostinger](docs/DESPLIEGUE_HOSTINGER.md).
-- [Plan de conexión PHP + MariaDB](docs/MARIADB_SIGUIENTE_FASE.md).
-- [.env.example](.env.example) — nombres de variables futuras, sin contraseñas.
-- [.gitignore](.gitignore) — excluye secretos y archivos locales.
+- `index.html` — interfaz POS con categorías visuales, teclado numérico, gráfica, historial y login.
+- `api/index.php` — API PHP para sesiones, gastos y categorías.
+- `api/bootstrap.php` — sesiones, conexión PDO, validaciones y protección CSRF.
+- `database/schema.sql` — tablas `users`, `categories`, `expenses` y `login_attempts`.
+- `database/create_admin.php` — inicialización CLI segura del primer usuario y categorías.
+- `config/gastosiq-config.example.php` — ejemplo de configuración; no contiene credenciales reales.
+- `docs/ACTIVACION_MARIADB.md` — **guía siguiente paso: activación del backend en Hostinger**.
+- `docs/DESPLIEGUE_HOSTINGER.md` — despliegue base de la maqueta.
 
-## Uso de la maqueta
+## Cómo continuar
 
-Abrir `index.html` en el navegador o publicar en un hosting estático/PHP.
+Leer **[Activación de MariaDB](docs/ACTIVACION_MARIADB.md)**.
 
-**Acceso de demostración:** `demo@iqneting.com` / `123456`.
+1. Desplegar última revisión GitHub `main` a Hostinger.
+2. Importar `database/schema.sql` en MariaDB usando phpMyAdmin.
+3. Configurar credenciales **exclusivamente en servidor**, fuera de `public_html` y de GitHub.
+4. Crear el primer usuario con script CLI por SSH o procedimiento seguro equivalente.
+5. Iniciar sesión y comprobar CRUD y persistencia.
 
-**Aviso:** el login NO es autenticación real. Los datos se almacenan únicamente en el navegador (`localStorage`) y la sesión demo en `sessionStorage`. Este repositorio actualmente es **público**: no subir información privada ni credenciales reales.
+**El antiguo acceso demo ya no está activo.** Hasta terminar la configuración privada y las pruebas del servidor, no considerar el proyecto en producción ni usar información sensible.
 
-## Siguiente paso
-
-Configurar dominio/sitio vacío en Hostinger, enlazar GitHub `main` y verificar que abre la interfaz. Después crear MariaDB y programar API PHP y login real, manteniendo la maqueta aprobada.
+**Seguridad:** contraseñas con hash, sesiones HTTP seguras, CSRF, consultas preparadas, autorización por usuario y límite básico de intentos de login. Estas protecciones están implementadas en código pero aún no han sido verificadas en el alojamiento real. El repositorio actualmente es público: nunca subir contraseñas ni datos reales.
