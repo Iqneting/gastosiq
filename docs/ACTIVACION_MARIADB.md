@@ -1,69 +1,36 @@
-# Activación de MariaDB real · Gastos IQ POS
+# Activación automática y protegida de Gastos IQ · MariaDB
 
-**Estado al 2026-11-07:** código PHP, SQL y frontend integrado **subidos a GitHub**. Aún se debe configurar la base y crear el primer usuario **en Hostinger**. No se ha comprobado el servidor real.
+**Fecha:** 2026-11-07. **Estado:** instalador programado y subido a GitHub, pendiente de probar en Hostinger.
 
-## Requisitos
+## Instalación nueva sin phpMyAdmin
 
-- Hosting con **PHP 8.1 o superior**, extensiones `pdo_mysql` y `mbstring`, HTTPS habilitado.
-- Hostinger configurado para desplegar el repositorio `Iqneting/gastosiq` desde `main`.
-- MariaDB y usuario de base de datos ya creados.
+Si ya creaste la base de datos vacía y el archivo privado `gastosiq-config.php` al mismo nivel que `public_html`, **no tienes que importar el SQL manualmente**.
 
-## Paso 1 · Desplegar cambios
+1. Edita el archivo privado `gastosiq-config.php` desde el Administrador de archivos de Hostinger, **fuera de `public_html`**. Mantén los cinco campos de MariaDB que ya escribiste.
+2. Añade dentro del arreglo PHP una sexta entrada: `'SETUP_KEY' => 'TU_CLAVE_ALEATORIA_UNICA_DE_32_O_MAS_CARACTERES',`. Genera una clave nueva larga y aleatoria con tu gestor de contraseñas, guárdala temporalmente y **no la envíes por chat** ni la subas a GitHub.
+3. Guarda los cambios en el archivo privado.
+4. Desde hPanel actualiza el despliegue de la rama `main` hasta incluir el archivo `instalar.php`.
+5. Abre **[https://gastosiq.gentemejor.com/instalar.php](https://gastosiq.gentemejor.com/instalar.php)** con HTTPS.
+6. Introduce la clave privada de instalación, el correo que usarás para entrar y una contraseña nueva de **12 a 128 caracteres**; pulsa «Crear base, tablas y usuario».
+7. PHP creará automáticamente las cuatro tablas `users`, `categories`, `expenses` y `login_attempts`, creará el primer usuario con contraseña hasheada y añadirá siete categorías visuales.
+8. Una vez terminada la instalación, **elimina la línea `SETUP_KEY` de tu archivo privado**. El instalador ya no permitirá crear cuentas mediante ese mecanismo.
+9. Abre [https://gastosiq.gentemejor.com/](https://gastosiq.gentemejor.com/) e inicia sesión. Registra un gasto, cierra sesión, vuelve a entrar, verifica los datos, edita y elimina el gasto.
 
-Desde hPanel desplegar la última revisión de `main`. Confirmar que están publicados `index.html`, `api/index.php` y `api/bootstrap.php`. No ingresar datos reales hasta completar los pasos siguientes.
+## Seguridad y límites
 
-## Paso 2 · Crear tablas
+- El instalador requiere clave secreta definida únicamente en el archivo privado, HTTPS y un token antifalsificación; **no crea usuarios automáticamente para cualquier visitante**.
+- Después de crear el primer usuario, no permite nuevas instalaciones. La clave se debe retirar de la configuración privada.
+- El usuario de MariaDB debe tener permisos de `CREATE TABLE`, `INSERT`, `SELECT`, `UPDATE` y `DELETE` para instalar. Recomendable después retirar el permiso de creación/alteración si no se requieren migraciones.
+- Nunca colocar la clave de instalación, el usuario de MariaDB ni su contraseña en archivos versionados en GitHub.
+- El instalador crea tablas solo cuando se autoriza con la clave secreta. **No asegura la conexión real hasta completar la instalación y las pruebas en Hostinger**.
+- Si la base contiene ya usuarios, el instalador bloqueará el alta de un segundo administrador.
+- Si falla, revisa el mensaje y el log privado de PHP. No muestres públicamente los errores de base de datos.
+- La maqueta POS se conserva; la instalación no modifica los estilos ni el diseño.
 
-Abrir **phpMyAdmin** en Hostinger, seleccionar la base de datos correcta y ejecutar/importar el contenido de `database/schema.sql`.
+## Ruta manual de respaldo
 
-Tablas: `users`, `categories`, `expenses`, `login_attempts`. Las claves externas protegen las relaciones.
+`database/schema.sql` sigue incluido como alternativa para phpMyAdmin, y `database/create_admin.php` como alternativa de inicialización por CLI/SSH. No son necesarios en la instalación automática normal.
 
-## Paso 3 · Configurar secretos fuera del sitio público
+## Verificación obligatoria
 
-**No subir contraseñas a GitHub ni colocarlas en el chat.**
-
-La API intenta leer primero variables de entorno `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`.
-
-Si las variables de entorno no están disponibles, crear manualmente en el servidor un archivo llamado **`gastosiq-config.php`** en el **directorio padre de `public_html`**, utilizando como referencia `config/gastosiq-config.example.php`. El archivo real **no debe estar dentro de `public_html`** ni sincronizarse con GitHub. Comprobar la estructura de carpetas real de hPanel antes de colocarlo.
-
-Si el despliegue usa otra carpeta pública, revisar la búsqueda de configuración en `api/bootstrap.php` antes de publicar.
-
-## Paso 4 · Crear el primer usuario
-
-Por seguridad, el sistema no expone un instalador público.
-
-Abrir SSH del hosting (si el plan lo permite), ubicarse en el directorio publicado y ejecutar:
-
-```bash
-php database/create_admin.php correo@dominio.com
-```
-
-El programa solicitará la contraseña de manera interactiva (**mínimo 12 caracteres**) y creará también 7 categorías iniciales. Impide crear un nuevo administrador con este script si ya existe un usuario.
-
-Si el hosting no ofrece SSH, **no publicar un instalador abierto**: solicitar otra forma segura de inicializar la cuenta. Puede generarse el hash con PHP ejecutado fuera del sitio público y crear el registro mediante phpMyAdmin.
-
-## Paso 5 · Probar
-
-1. Visitar `https://TU-DOMINIO/api/index.php?action=session`. Se espera un JSON con `ok: true`, `loggedIn: false` y token CSRF, sin contraseñas.
-2. Abrir el sitio bajo HTTPS. Entrar con el correo y contraseña del paso 4. El acceso demo anterior ya no funciona.
-3. Crear una categoría; crear un gasto; cerrar sesión; volver a iniciar sesión; verificar gasto y gráfica.
-4. Editar y borrar el gasto; intentar borrar una categoría con gastos (debe impedirse).
-5. Verificar que abrir la API de gastos sin sesión devuelve HTTP 401, que no pueda leerse el archivo de configuración y que PHP no muestre trazas de errores.
-6. Revisar permisos del usuario MariaDB, respaldos y restauración.
-
-## Seguridad incorporada
-
-- Hash de contraseña con `password_hash`/`password_verify`.
-- Cookie de sesión HttpOnly, Secure, SameSite=Lax; regeneración de ID al login.
-- Token CSRF obligatorio en las peticiones POST.
-- Consultas preparadas con PDO, sin interpolar datos del usuario.
-- Filtrado por usuario en consultas y cambios de gastos/categorías.
-- Bloqueo temporal básico tras 5 fallos de inicio de sesión por correo+IP.
-- Errores sensibles ocultos al visitante (registrados en logs).
-- Llaves de BD fuera de GitHub y fuera de la raíz web.
-
-### Pendiente de verificar en servidor
-
-No se ha realizado todavía prueba funcional en Hostinger ni auditoría de seguridad externa. La seguridad debe verificarse tras el despliegue; no debe darse por garantizada.
-
-**Observación:** el repositorio es público y contiene solo código y ejemplos sin claves. Antes de utilizarlo con información real, confirmar que ninguna credencial se añadió al historial.
+Antes de utilizar datos reales: revisar acceso autenticado, permisos por usuario, cierre de sesión, HTTPS, protección de archivos, y confirmar que cada gasto se conserva entre sesiones. Las pruebas de seguridad en el servidor siguen pendientes.
